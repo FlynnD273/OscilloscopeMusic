@@ -1,0 +1,5 @@
+__pycache__
+
+*.blend[0-9]
+*.pickle
+*.wav
