@@ -16,10 +16,12 @@ if basepath  not in sys.path:
 from conversion_config import Config
 
 config = Config()
-config.sampling_rate = 44100 * 9
-config.volume = 0.3
+config.sampling_rate = 44100
+config.volume = 0.5
 config.animation_fps = bpy.context.scene.render.fps
 config.basepath = basepath
+
+mult: int = 8
 
 audio_signal_left: list[float] = []
 audio_signal_right: list[float] = []
@@ -77,7 +79,8 @@ for frame in range(frame_start, frame_end + 1):
     left = []
     right = []
     layer = gpencil_data.layers.active
-    strokes = layer.active_frame.strokes
+    strokes = list(layer.active_frame.strokes)
+    
 
     # get the total length of all strokes
     total_length = 0
@@ -85,6 +88,12 @@ for frame in range(frame_start, frame_end + 1):
         if len(stroke.points) < 2:
             continue
         total_length += get_stroke_len(stroke.points)
+
+    for i in range(max(mult - 1, 0)):
+        strokes.extend(layer.active_frame.strokes)
+
+    if mult > 1:
+        total_length *= mult
 
     for stroke in strokes:
         points = stroke.points
@@ -117,5 +126,7 @@ with open(path.join(basepath, "right.pickle"), "wb") as f:
     pickle.dump(audio_signal_right, f)
 with open(path.join(basepath, "config.pickle"), "wb") as f:
     pickle.dump(config, f)
+
+print(audio_signal_left)
 
 print("\ndone!")
